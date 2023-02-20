@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Tasklist Panel</title>
+	<style>
+		*:not(dialog) {
+			margin: 0px;
+			padding: 0px;
+			box-sizing: border-box;
+		}
+
+		::highlight(current-find-highlight) {
+			background-color: var(--vscode-editor-findMatchBackground);
+		}
+
+		::highlight(find-highlight) {
+			background-color: var(--vscode-editor-findMatchHighlightBackground);
+		}
+
+		::-webkit-scrollbar {
+			width: 10px;
+			height: 10px;
+		}
+
+		::-webkit-scrollbar-corner {
+			background-color: var(--vscode-editor-background);
+		}
+
+		::-webkit-scrollbar-thumb {
+			background-color: var(--vscode-scrollbarSlider-background);
+		}
+
+		dialog {
+			border: 1px solid var(--vscode-editorWidget-border);
+			color: var(--vscode-editor-foregorund);
+			background-color: var(--vscode-editorWidget-background);
+		}
+
+		dialog::backdrop {
+			background-color: #1e1e1e;
+		}
+
+		input[type="text"]:focus,
+		input[type="password"]:focus,
+		textarea:focus {
+			outline-color: var(--vscode-focusBorder);
+			outline-width: 1px;
+			outline-style: solid;
+			outline-offset: -1px;
+			opacity: 1;
+		}
+
+		input[type="text"],
+		input[type="password"],
+		textarea {
+			background-color: var(--vscode-input-background);
+			border: 1px solid var(--vscode-input-background);
+			padding: 4px;
+			border-radius: 2px;
+			width: 100%;
+			color: var(--vscode-input-foreground);
+		}
+
+		.w-100 {
+			width: 100%;
+		}
+
+		.container {
+			padding: 15px;
+		}
+
+		.uppercase {
+			text-transform: uppercase;
+		}
+
+		button {
+			background-color: var(--vscode-button-background);
+			border: 1px solid var(--vscode-button-background);
+			color: var(--vscode-button-foreground);
+			padding: 5px;
+			cursor: pointer;
+			user-select: none;
+			min-width: 120px;
+		}
+
+		button:hover {
+			background-color: var(--vscode-button-hoverBackground);
+		}
+
+		.signin-dialog .title {
+			font-size: 30px;
+			/* margin-bottom: 10px; */
+		}
+
+		section {
+			padding-top: 15px;
+			padding-bottom: 10px;
+			border-top: 1px solid var(--vscode-button-separator);
+		}
+
+		h1 {
+			padding-bottom: 5px;
+		}
+
+		.pb-10 {
+			padding-bottom: 10px;
+		}
+
+		.text-right {
+			text-align: right;
+		}
+
+		.signin-dialog .group {
+			padding-top: 10px;
+		}
+
+		.tasklist .task {
+			border-top: 1px solid gray;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<h1>Tasklist</h1>
+		<section>
+			<div class="main-form">
+				<textarea class="task" rows="5" placeholder="Type here..."></textarea>
+			</div>
+		</section>
+		<div class="text-right pb-10">
+			<button class="btn-add">Add</button>
+		</div>
+		<div class="tasklist">
+			<div class="task">Task text message content comes here to explain what was done into the projet.</div>
+		</div>
+		<div class="logger"></div>
+		<div class="group">
+			<button class="w-100 primary btn-debug">Debug</button>
+		</div>
+	</div>
+
+	<dialog class="signin-dialog">
+		<div class="title">Login FRS</div>
+		<div class="group">
+			<input type="text" class="username uppercase" placeholder="CHAVE">
+		</div>
+		<div class="group">
+			<input type="password" class="password" placeholder="PASSWORD">
+		</div>
+		<div class="group">
+			<button class="w-100 primary btn-signin">Sign in</button>
+		</div>
+		<div class="group">
+			<button class="w-100 primary btn-magic-auth">Magic Auth</button>
+		</div>
+	</dialog>
+
+	<script>
+		const getEl = (s) => document.querySelector(s)
+		const vscode = acquireVsCodeApi()
+
+		const list = getEl('div.tasklist')
+		const btnAdd = getEl('button.btn-add')
+		const btnSignin = getEl('button.btn-signin')
+		const btnMagicAuth = getEl('button.btn-magic-auth')
+		const btnDebug = getEl('button.btn-debug')
+		const taskText = getEl('textarea.task')
+		const logger = getEl('div.logger')
+		const username = getEl('input.username')
+		const password = getEl('input.password')
+		const signinModal = getEl('dialog.signin-dialog')
+
+		function log(message) {
+			logger.innerHTML += /* html */`<div>${message}</div>`
+		}
+
+		username.onchange = (e) => {
+			localStorage.setItem('sidecar::username', e.target.value)
+		}
+
+		btnMagicAuth.onclick = (e) => {
+			vscode.postMessage({ event: 'magic-auth' })
+		}
+
+		btnAdd.onclick = () => {
+			vscode.postMessage({ event: 'add-task', task: taskText.value })
+		}
+
+		btnDebug.onclick = () => {
+			vscode.postMessage({ event: 'debug' })
+		}
+
+		btnSignin.onclick = (e) => {
+			vscode.postMessage({
+				event: 'sign-in',
+				username: username.value,
+				password: password.value
+			})
+			signinModal.close()
+		}
+
+		window.onmessage = (e) => {
+			const message = e.data
+			const eventName = String(message.event).toLowerCase()
+			switch (eventName) {
+				case 'tasklist':
+
+					break;
+				case 'auth-success':
+					signinModal.close()
+					break;
+				default:
+					log(`Unknown event "${eventName}" received.`)
+			}
+		}
+
+		window.addEventListener('DOMContentLoaded', () => {
+			const _username = localStorage.getItem('sidecar::username')
+			if (_username) {
+				username.value = _username
+				password.focus()
+			}
+			signinModal.showModal()
+			vscode.postMessage({ event: 'auth-check' })
+		}, false)
+	</script>
+</body>
+
+</html>

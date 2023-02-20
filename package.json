@@ -1,0 +1,62 @@
+{
+	"name": "sidecar",
+	"displayName": "Sidecar",
+	"version": "0.0.2",
+	"author": {
+		"name": "SamukaDEV",
+		"email": "absfregs@gmail.com",
+		"url": "https://github.com/SamukaDEV"
+	},
+	"publisher": "absfregs",
+	"repository": {
+		"directory": "/",
+		"type": "",
+		"url": ""
+	},
+	"engines": {
+		"vscode": "^1.30.0"
+	},
+	"activationEvents": [
+		"onLanguage:json",
+		"onLanguage:markdown",
+		"onLanguage:typescript",
+		"onLanguage:javascript",
+		"onLanguage:html",
+		"onView:Tasklist"
+	],
+	"main": "./src/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "extension.searchAnswer",
+				"title": "Search answers"
+			},
+			{
+				"command": "extension.tasklistPanel",
+				"title": "Open Tasklist"
+			}
+		],
+		"keybindings": [
+			{
+				"command": "extension.searchAnswer",
+				"title": "Search answers",
+				"key": "ctrl+alt+h"
+			},
+			{
+				"command": "extension.tasklistPanel",
+				"title": "Open Tasklist",
+				"key": "ctrl+alt+t"
+			}
+		],
+		"configuration": {
+			"type": "object",
+			"title": "OpenAI API Key",
+			"properties": {
+				"sidecar.api_key": {
+					"type": "string",
+					"description": "The OpenAPI Key generated to search answers"
+				}
+			}
+		}
+	}
+}
